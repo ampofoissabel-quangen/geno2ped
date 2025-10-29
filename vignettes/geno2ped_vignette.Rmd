@@ -15,33 +15,80 @@ vignette: >
 
 library(geno2ped)
 
-# 1) Read genotypes (prototype expects an RDS with list(G, ids, map))
-# Use your own PLINK/VCF reader here and assemble a 0/1/2 matrix.
-g <- read_genotypes(bed_prefix = "inst/extdata/mock_geno") # expects inst/extdata/mock_geno.rds
+# Try package-shipped files (inst/extdata/)
+fp_geno <- system.file("extdata", "dairy_mock_geno", package = "geno2ped")
+fp_meta <- system.file("extdata", "dairy_samples.csv", package = "geno2ped")
 
-# 2) Build pedigree
-res <- build_pedigree(g, error_rate = 0.005)
+if (fp_geno != "" && fp_meta != "") {
+  geno <- read_genotypes(
+    bed_prefix      = fp_geno,   # .rds is appended internally
+    sample_metadata = fp_meta
+  )
+} else {
+  # Fallback: simulate here (no external tools needed)
+  n_sires <- 15; n_dams <- 30; n_calves <- 120; p <- 1000
+  ids_sire <- paste0("S", seq_len(n_sires))
+  ids_dam  <- paste0("D", seq_len(n_dams))
+  ids_calv <- paste0("C", seq_len(n_calves))
+  ids_all  <- c(ids_sire, ids_dam, ids_calv)
 
-# 3) Write outputs
+  maf <- runif(p, 0.05, 0.50)
+  draw_geno <- function(n) matrix(rbinom(n * p, 2, maf), nrow = n, ncol = p)
+
+  G_sire <- draw_geno(n_sires)
+  G_dam  <- draw_geno(n_dams)
+  sire_idx <- sample(seq_len(n_sires), n_calves, replace = TRUE)
+  dam_idx  <- sample(seq_len(n_dams),  n_calves, replace = TRUE)
+
+  G_calv <- matrix(NA_integer_, n_calves, p)
+  for (i in seq_len(n_calves)) {
+    s <- G_sire[sire_idx[i], ]
+    d <- G_dam[dam_idx[i], ]
+    s_alleles <- rbinom(p, 1, s/2)
+    d_alleles <- rbinom(p, 1, d/2)
+    G_calv[i, ] <- s_alleles + d_alleles
+  }
+
+  G   <- rbind(G_sire, G_dam, G_calv)
+  map <- data.frame(chr = sample(1:29, p, TRUE),
+                    pos = sample(1e6:5e6, p),
+                    snp = paste0("rs", seq_len(p)))
+
+  meta <- data.frame(
+    ID        = ids_all,
+    Sex       = c(rep("M", n_sires), rep("F", n_dams), sample(c("M","F"), n_calves, TRUE)),
+    BirthYear = c(rep(2015, n_sires), rep(2016, n_dams), sample(2018:2023, n_calves, TRUE)),
+    stringsAsFactors = FALSE
+  )
+
+  saveRDS(list(G = G, ids = ids_all, map = map), file = "dairy_mock_geno.rds")
+  write.csv(meta, "dairy_samples.csv", row.names = FALSE)
+
+  geno <- read_genotypes(
+    bed_prefix      = "dairy_mock_geno",
+    sample_metadata = "dairy_samples.csv"
+  )
+}
+str(geno)
+res <- build_pedigree(geno, error_rate = 0.005)
+head(res$pedigree)
+head(res$trios)
 write_outputs(res, out_dir = "geno2ped_out")
-
-# 4) QC plots
-plot_kinship(res)
-plot_me(res)
-### Precision vs coverage
-
-# High-precision (stricter thresholds)
+list.files("geno2ped_out")
+# -> pedigree.csv, assignments.tsv, trios.tsv
+if (interactive()) {
+  plot_kinship(res)
+  plot_me(res)
+}
+# High-precision (stricter thresholds; fewer but cleaner trios)
 res_hp <- build_pedigree(geno, preset = "high_precision")
-# High-coverage (default-like thresholds)
+
+# High-coverage (looser thresholds; more trios)
 res_hc <- build_pedigree(geno, preset = "high_coverage")
 
-# Compare counts
-c(HP_trios = sum(res_hp$trios$decision == "accept"),
-  HC_trios = sum(res_hc$trios$decision == "accept"))
-
-```
-
-### Notes
-- Replace the prototype similarity metric with KING-kinship or SNPRelate IBD for production.
-- Provide Sex/BirthYear in `inst/extdata/mock_samples.csv` to improve directionality.
-- Outputs: `pedigree.csv`, `assignments.tsv`, and `trios.tsv`.
+c(
+  HP_trios = sum(res_hp$trios$decision == "accept", na.rm = TRUE),
+  HC_trios = sum(res_hc$trios$decision == "accept", na.rm = TRUE)
+)
+meta <- geno$meta
+write_blupf90_ped(res, meta = meta, file = "geno2ped_out/pedigree_blupf90.ped")
