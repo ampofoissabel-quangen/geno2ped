@@ -28,6 +28,17 @@ write_outputs(res, out_dir = "geno2ped_out")
 # 4) QC plots
 plot_kinship(res)
 plot_me(res)
+### Precision vs coverage
+
+# High-precision (stricter thresholds)
+res_hp <- build_pedigree(geno, preset = "high_precision")
+# High-coverage (default-like thresholds)
+res_hc <- build_pedigree(geno, preset = "high_coverage")
+
+# Compare counts
+c(HP_trios = sum(res_hp$trios$decision == "accept"),
+  HC_trios = sum(res_hc$trios$decision == "accept"))
+
 ```
 
 ### Notes
