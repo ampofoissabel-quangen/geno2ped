@@ -1,0 +1,36 @@
+---
+title: "geno2ped: From PLINK to pedigree in 5 minutes"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{geno2ped quickstart}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```r
+# install.packages(c("devtools","knitr","rmarkdown","ggplot2","data.table"))
+# devtools::load_all(".")  # while developing
+
+library(geno2ped)
+
+# 1) Read genotypes (prototype expects an RDS with list(G, ids, map))
+# Use your own PLINK/VCF reader here and assemble a 0/1/2 matrix.
+g <- read_genotypes(bed_prefix = "inst/extdata/mock_geno") # expects inst/extdata/mock_geno.rds
+
+# 2) Build pedigree
+res <- build_pedigree(g, error_rate = 0.005)
+
+# 3) Write outputs
+write_outputs(res, out_dir = "geno2ped_out")
+
+# 4) QC plots
+plot_kinship(res)
+plot_me(res)
+```
+
+### Notes
+- Replace the prototype similarity metric with KING-kinship or SNPRelate IBD for production.
+- Provide Sex/BirthYear in `inst/extdata/mock_samples.csv` to improve directionality.
+- Outputs: `pedigree.csv`, `assignments.tsv`, and `trios.tsv`.

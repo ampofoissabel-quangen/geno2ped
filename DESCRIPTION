@@ -1,0 +1,24 @@
+Package: geno2ped
+Type: Package
+Title: Rapid Pedigree Construction from SNP Genotypes
+Version: 0.0.0.9000
+Authors@R: c(person(given = "Issabelle", family = "Ampofo", role = c("aut", "cre"), email = "you@example.com"))
+Description: Tools to infer sire and dam from SNP genotypes using robust kinship screening,
+    duo/trio Mendelian validation, and conflict resolution, returning a three-column pedigree
+    and quality-control reports ready for evaluation software (e.g., BLUPF90).
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Depends: R (>= 4.0)
+Imports:
+    data.table,
+    utils,
+    stats
+Suggests:
+    SNPRelate,
+    ggplot2,
+    knitr,
+    rmarkdown
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+VignetteBuilder: knitr
