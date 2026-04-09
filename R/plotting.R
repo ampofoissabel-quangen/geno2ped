@@ -1,10 +1,11 @@
+# R/plotting.R  — add this at the very top of the file
+utils::globalVariables(c("similarity", "Role", "ME", "assignment_status"))
 #' Plot candidate-parent similarity distribution
-#'
+#' @importFrom ggplot2 ggplot aes geom_histogram geom_bar labs theme_minimal
 #' @param res Result of build_pedigree()
 #' @export
-# R/plotting.R  — add this at the very top of the file
 
-utils::globalVariables(c("similarity", "Role", "ME", "assignment_status"))
+
 
 plot_kinship <- function(res) {
   package_assert("ggplot2")
