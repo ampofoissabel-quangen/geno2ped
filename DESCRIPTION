@@ -1,11 +1,27 @@
 Package: geno2ped
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: Rapid Pedigree Construction from SNP Genotypes
+Version: 0.1.0
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    person("Issabelle", "Ampofo", , "ampofoissabel-quangen@github.com", role = c("aut", "cre"),
+           comment = c(ORCID = ""))
+Description: Tools for inferring pedigrees and familial relationships from 
+    SNP genotype data. Supports PLINK (bed/bim/fam) and VCF/VCF.GZ input 
+    formats. Computes genomic similarity matrices and reconstructs 
+    parent-offspring and sibling relationships from population-scale 
+    genotype data.
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
+URL: https://github.com/ampofoissabel-quangen/geno2ped
+BugReports: https://github.com/ampofoissabel-quangen/geno2ped/issues
+Imports:
+    bigsnpr,
+    VariantAnnotation,
+    utils
+Suggests:
+    BiocManager,
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
