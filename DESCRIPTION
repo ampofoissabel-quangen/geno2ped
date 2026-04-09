@@ -18,11 +18,11 @@ BugReports: https://github.com/ampofoissabel-quangen/geno2ped/issues
 Imports:
     bigsnpr,
     VariantAnnotation,
-    utils
+    utils,
+    ggplot2,
+    GenomicRanges,
+    SummarizedExperiment
 Suggests:
     BiocManager,
-    testthat (>= 3.0.0),
-    knitr,
-    rmarkdown
-VignetteBuilder: knitr
+    testthat (>= 3.0.0)
 Config/testthat/edition: 3
