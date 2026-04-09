@@ -136,15 +136,15 @@ test_that("build_pedigree() assignment_rate is between 0 and 1", {
 })
 
 test_that("build_pedigree() high_precision preset sets correct thresholds", {
-  geno <- make_geno()
-  res  <- build_pedigree(geno, preset = "high_precision", verbose = FALSE)
+  geno      <- make_geno()
+  geno$meta <- make_meta(geno$ids)  # provides Sex and BirthYear needed for use_age = TRUE
+  res       <- build_pedigree(geno, preset = "high_precision", verbose = FALSE)
 
   expect_equal(res$settings$s_threshold, 0.85)
   expect_equal(res$settings$me_max, 0.002)
   expect_equal(res$settings$top_k, 2)
   expect_true(res$settings$use_age)
 })
-
 test_that("build_pedigree() high_coverage preset sets correct thresholds", {
   geno <- make_geno()
   res  <- build_pedigree(geno, preset = "high_coverage", verbose = FALSE)

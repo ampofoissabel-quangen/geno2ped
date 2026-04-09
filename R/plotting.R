@@ -2,6 +2,10 @@
 #'
 #' @param res Result of build_pedigree()
 #' @export
+# R/plotting.R  — add this at the very top of the file
+
+utils::globalVariables(c("similarity", "Role", "ME", "assignment_status"))
+
 plot_kinship <- function(res) {
   package_assert("ggplot2")
 
