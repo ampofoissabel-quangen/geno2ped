@@ -1,0 +1,174 @@
+---
+title: "Introduction to geno2ped"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to geno2ped}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Overview
+
+`geno2ped` is an R package for rapid pedigree construction from SNP genotype 
+data. It infers parent-offspring relationships using genomic similarity and 
+Mendelian error validation, and supports PLINK, VCF, and CSV input formats.
+
+## Installation
+
+```{r install, eval = FALSE}
+devtools::install_github("ampofoissabel-quangen/geno2ped")
+```
+
+## Loading the Package
+
+```{r load}
+library(geno2ped)
+```
+
+## Reading Genotypes
+
+### From a CSV file
+The simplest input format is a CSV where the first column contains sample IDs
+and the remaining columns contain SNP genotypes (0/1/2):
+
+```{r read-csv, eval = FALSE}
+geno <- read_genotypes(
+  csv             = "path/to/genotypes.csv",
+  sample_metadata = "path/to/metadata.csv"
+)
+```
+
+### From PLINK files
+```{r read-plink, eval = FALSE}
+geno <- read_genotypes(
+  bed_prefix      = "path/to/mydata",
+  sample_metadata = "path/to/metadata.csv"
+)
+```
+
+### From VCF files
+```{r read-vcf, eval = FALSE}
+geno <- read_genotypes(
+  vcf             = "path/to/mydata.vcf.gz",
+  sample_metadata = "path/to/metadata.csv"
+)
+```
+
+### The genotype object
+`read_genotypes()` returns a list with four elements:
+
+| Element  | Description                              |
+|----------|------------------------------------------|
+| `$G`     | Genotype matrix (samples x SNPs, 0/1/2) |
+| `$ids`   | Sample ID vector                         |
+| `$map`   | SNP map (chr, pos, snp)                  |
+| `$meta`  | Sample metadata (ID, Sex, BirthYear)     |
+
+### Sample metadata format
+Your metadata CSV should look like this:
+
+| ID        | Sex | BirthYear |
+|-----------|-----|-----------|
+| Sample001 | M   | 1985      |
+| Sample002 | F   | 1990      |
+| Sample003 | M   | 2005      |
+
+## Building a Pedigree
+
+### Using a preset
+The easiest way is to use a built-in preset:
+
+```{r build, eval = FALSE}
+res <- build_pedigree(
+  geno,
+  preset  = "high_precision",
+  verbose = TRUE
+)
+```
+
+Three presets are available:
+
+| Preset           | Use case                              |
+|------------------|---------------------------------------|
+| `none`           | Manual threshold control              |
+| `high_precision` | Minimise false positives              |
+| `high_coverage`  | Maximise assignments                  |
+
+### Custom thresholds
+```{r custom, eval = FALSE}
+res <- build_pedigree(
+  geno,
+  s_threshold    = 0.75,
+  me_max         = 0.003,
+  oh_max         = 20,
+  use_sex        = TRUE,
+  use_age        = TRUE,
+  min_parent_gap = 2,
+  top_k          = 3
+)
+```
+
+### The result object
+`build_pedigree()` returns a list with:
+
+| Element       | Description                              |
+|---------------|------------------------------------------|
+| `$pedigree`   | Final pedigree (ID, Sire, Dam, status)   |
+| `$assignments`| All candidate parent scores              |
+| `$trios`      | Best trio per offspring                  |
+| `$trios_all`  | All evaluated trios                      |
+| `$summary`    | Assignment statistics                    |
+| `$settings`   | Parameters used                          |
+
+### Viewing results
+```{r results, eval = FALSE}
+# View the pedigree
+res$pedigree
+
+# View summary statistics
+res$summary
+```
+
+## Visualising Results
+
+```{r plots, eval = FALSE}
+# Similarity score distribution
+plot_kinship(res)
+
+# Mendelian error rate distribution
+plot_me(res)
+
+# Assignment outcome counts
+plot_assignment_status(res)
+```
+
+## Saving Results
+
+```{r save, eval = FALSE}
+write_outputs(
+  res,
+  outdir = "geno2ped_results",
+  prefix = "my_run"
+)
+```
+
+This creates the following files in `geno2ped_results/`:
+
+- `my_run_pedigree.csv` — final pedigree
+- `my_run_assignments.csv` — candidate scores
+- `my_run_trios.csv` — best trios
+- `my_run_summary.txt` — run statistics
+- `my_run_settings.txt` — parameters used
+
+## Session Info
+
+```{r session}
+sessionInfo()
+```
