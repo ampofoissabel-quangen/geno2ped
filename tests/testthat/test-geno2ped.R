@@ -63,7 +63,6 @@ test_that("read_genotypes() loads metadata CSV correctly", {
   meta_csv <- file.path(tmp, "meta.csv")
   write.csv(meta, meta_csv, row.names = FALSE)
 
-  # Save as RDS for prototype mode
   saveRDS(mock, file.path(tmp, "meta_test.rds"))
 
   result <- read_genotypes(
@@ -137,7 +136,7 @@ test_that("build_pedigree() assignment_rate is between 0 and 1", {
 
 test_that("build_pedigree() high_precision preset sets correct thresholds", {
   geno      <- make_geno()
-  geno$meta <- make_meta(geno$ids)  # provides Sex and BirthYear needed for use_age = TRUE
+  geno$meta <- make_meta(geno$ids)  # needed because high_precision uses use_age = TRUE
   res       <- build_pedigree(geno, preset = "high_precision", verbose = FALSE)
 
   expect_equal(res$settings$s_threshold, 0.85)
@@ -145,6 +144,7 @@ test_that("build_pedigree() high_precision preset sets correct thresholds", {
   expect_equal(res$settings$top_k, 2)
   expect_true(res$settings$use_age)
 })
+
 test_that("build_pedigree() high_coverage preset sets correct thresholds", {
   geno <- make_geno()
   res  <- build_pedigree(geno, preset = "high_coverage", verbose = FALSE)
@@ -231,7 +231,7 @@ test_that("write_outputs() errors on invalid result object", {
 })
 
 # ══════════════════════════════════════════════════════════════════════════════
-# plot functions (smoke tests — check they return ggplot objects)
+# plot functions (smoke tests)
 # ══════════════════════════════════════════════════════════════════════════════
 
 test_that("plot_kinship() returns a ggplot object", {
