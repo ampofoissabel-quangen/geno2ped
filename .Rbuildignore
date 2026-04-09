@@ -1,2 +1,5 @@
 ^geno2ped\.Rproj$
 ^\.Rproj\.user$
+^LICENSE\.md$
+^dev$
+^\.github$

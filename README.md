@@ -1,6 +1,7 @@
 # geno2ped
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/ampofoissabel-quangen/geno2ped/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ampofoissabel-quangen/geno2ped/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 ## Overview
